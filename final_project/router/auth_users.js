@@ -38,17 +38,57 @@ regd_users.post("/login", (req,res) => {
 
   req.session.token = token;
 
-  return res.status(200).send("Customer successfully logged in");
-  // return res.status(200).json({
-  //   message: "Successfully logged in",
-  //   token: token
-  // });
+  // return res.status(200).send("Customer successfully logged in");
+  return res.status(200).json({
+    message: "Successfully logged in",
+    token: token
+  });
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const { isbn } = req.params;
+  const { review } = req.query;
+
+  if (!review) {
+    return res.status(400).json({
+      message: "Review text is required"
+    });
+  }
+
+  if (!books[isbn]) {
+    return res.status(404).json({
+      message: "Book not found"
+    });
+  }
+
+  const token = req.session.token;
+  if (!token) {
+    return res.status(403).json({
+      message: "Access Denied, No Token Provided"
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, "my_secret_key");
+    const username = decoded.username;
+
+    if (!books[isbn].reviews) {
+      books[isbn].reviews = {};
+    }
+
+    books[isbn].reviews[username] = review;
+
+    // return res.status(200).json({
+    //   message: "Review successfully added/updated"
+    // });
+    return res.status(200).send(`The review for the book with ISBN ${isbn} has been added/updated`);
+
+  } catch (err) {
+    return res.status(400).json({
+      message: "Invalid or expired token"
+    })
+  }
 });
 
 module.exports.authenticated = regd_users;
