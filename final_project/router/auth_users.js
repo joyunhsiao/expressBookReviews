@@ -37,6 +37,7 @@ regd_users.post("/login", (req,res) => {
   const token = jwt.sign({ username }, "my_secret_key", { expiresIn: "1h" });
 
   req.session.token = token;
+  req.session.username = username;
 
   // return res.status(200).send("Customer successfully logged in");
   return res.status(200).json({
@@ -89,6 +90,33 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
       message: "Invalid or expired token"
     })
   }
+});
+
+// Delete a book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  const { isbn } = req.params;
+  const username = req.session.username;
+
+  if (!books[isbn]) {
+    return res.status(404).json({
+      message: "Book not found"
+    });
+  }
+
+  const bookReviews = books[isbn].reviews;
+  if (!bookReviews || !bookReviews[username]) {
+    return res.status(404).json({
+      message: "No review found for this user"
+    })
+  }
+
+  delete bookReviews[username];
+
+  // return res.status(200).json({
+  //   message: "Review deleted successfully",
+  //   reviews: bookReviews
+  // });
+  return res.status(200).send(`Reviews for the ISBN ${isbn} posted by user deleted`);
 });
 
 module.exports.authenticated = regd_users;
