@@ -1,7 +1,7 @@
 const express = require('express');
 let books = require("./booksdb.js");
+let users = require("./usersdb.js");
 let isValid = require("./auth_users.js").isValid;
-let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
 
@@ -20,7 +20,7 @@ public_users.post("/register", (req,res) => {
     });
   }
 
-  users.push({ username, password });
+  users[username] = { password };
 
   return res.status(201).json({
     message: "Customer successfully registered. Now you can login"
