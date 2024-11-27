@@ -69,46 +69,56 @@ public_users.get('/isbn/:isbn', async function (req, res) {
 });
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  const author = req.params.author;
+public_users.get('/author/:author', async function (req, res) {
+  try {
+    const author = req.params.author;
 
-  let foundBook = null;
+    const foundBook = await new Promise((resolve, reject) => {
+      for (let bookId in books) {
+        if (books[bookId].author === author) {
+          return resolve(books[bookId]);
+        }
+      }
+      reject("Book not found");
+    });
 
-  for (let bookId in books) {
-    if (books[bookId].author === author) {
-      foundBook = books[bookId];
-      break;
-    }
-  }
-
-  if (foundBook) {
     return res.status(200).json(foundBook);
-  } else {
-    return res.status(404).json({
-      message: "Book not found"
-    })
+  } catch (error) {
+    if (error === "Book not found") {
+      return res.status(404).json({
+        message: error
+      });
+    }
+    return res.status(500).json({
+      message: "An error occurred"
+    });
   }
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  const title = req.params.title;
+public_users.get('/title/:title', async function (req, res) {
+  try {
+    const title = req.params.title;
 
-  let foundBook = null;
-
-  for (let bookId in books) {
-    if (books[bookId].title === title) {
-      foundBook = books[bookId];
-      break;
-    }
-  }
-
-  if (foundBook) {
-    return res.status(200).json(foundBook);
-  } else {
-    return res.status(404).json({
-      message: "Book not found"
+    const foundBook = await new Promise ((resolve, reject) => {
+      for (let bookId in books) {
+        if (books[bookId].title === title) {
+          return resolve(books[bookId]);
+        }
+      }
+      reject("Book not found");
     })
+
+    return res.status(200).json(foundBook);
+  } catch (error) {
+    if (error === "Book not found") {
+      return res.status(404).json({
+        message: error
+      });
+    }
+    return res.status(500).json({
+      message: "An error occurred"
+    });
   }
 });
 
